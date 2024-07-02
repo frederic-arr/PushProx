@@ -25,6 +25,8 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -48,6 +50,7 @@ var (
 	tlsKey      = kingpin.Flag("tls.key", "<key> Private key file").String()
 	metricsAddr = kingpin.Flag("metrics-addr", "Serve Prometheus metrics at this address").Default(":9369").String()
 	forwardAddr = kingpin.Flag("forward-addr", "Send requests to this address").Default(fqdn.Get()).String()
+	allowPorts  = kingpin.Flag("allowed-ports", "List of allowed ports (everything is allowed by default)").Int16List()
 
 	retryInitialWait = kingpin.Flag("proxy.retry.initial-wait", "Amount of time to wait after proxy failure").Default("1s").Duration()
 	retryMaxWait     = kingpin.Flag("proxy.retry.max-wait", "Maximum amount of time to wait between proxy poll retries").Default("5s").Duration()
@@ -129,6 +132,17 @@ func (c *Coordinator) doScrape(request *http.Request, client *http.Client) {
 
 	port := request.URL.Port()
 	if port != "" {
+		parsedPort, err := strconv.Atoi(port)
+		if err != nil {
+			c.handleErr(request, client, fmt.Errorf("failed to scrape %s: %w", request.URL.String(), err))
+			return
+		}
+
+		if len(*allowPorts) > 0 && !slices.Contains(*allowPorts, int16(parsedPort)) {
+			c.handleErr(request, client, fmt.Errorf("port %d is not allowed", parsedPort))
+			return
+		}
+
 		port = fmt.Sprintf(":%s", port)
 	}
 	request.URL.Host = fmt.Sprintf("%s%s", *forwardAddr, port)
