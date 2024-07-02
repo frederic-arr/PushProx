@@ -8,3 +8,5 @@
 /pushprox-proxy
 
 /vendor
+/dist/
+dist/

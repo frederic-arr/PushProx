@@ -1,0 +1,47 @@
+version: 2
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: pushprox-proxy
+    main: ./cmd/proxy
+    goos:
+      - windows
+      - linux
+    goarch:
+      - amd64
+    binary: pushprox-proxy
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+
+  - id: pushprox-client
+    main: ./cmd/client
+    goos:
+      - windows
+      - linux
+    goarch:
+      - amd64
+    binary: pushprox-client
+    mod_timestamp: '{{ .CommitTimestamp }}'
+    flags:
+      - -trimpath
+    ldflags:
+      - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
+
+archives:
+  - format: binary
+    builds:
+      - pushprox-client
+      - pushprox-proxy
+    name_template: "{{ .Binary }}-v{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
