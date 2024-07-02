@@ -5,6 +5,12 @@ similar network topologies by Prometheus, while still following the pull model.
 
 While this is reasonably robust in practice, this is a work in progress.
 
+## Fork
+This fork of [prometheus-community/PushProx](https://github.com/prometheus-community/PushProx) introduces the following changes:
+- THe proxy now ignores the case of the FQDN of the clients
+- The client now supports the `--forward-addr` flag, which allows the client to specify to which address the scrape request should be forwarded (.e.g `127.0.0.1`)
+- The client now supports the `--allowed-ports` flag, which allows the client to specify which ports are allowed to be scraped by the proxy
+
 ## Running
 
 First build the proxy and client:
