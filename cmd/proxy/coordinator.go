@@ -17,6 +17,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -78,6 +79,7 @@ func (c *Coordinator) genID() (string, error) {
 }
 
 func (c *Coordinator) getRequestChannel(fqdn string) chan *http.Request {
+	fqdn = strings.ToLower(fqdn)
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	ch, ok := c.waiting[fqdn]
